@@ -1,0 +1,8 @@
+raspi:
+    scheme: sftp
+    host: kalahan.be
+    port: 22
+    user: osmc
+    pass: osmc
+    path:
+        remote: /mnt/mass/Web
