@@ -5,4 +5,4 @@ raspi:
     user: osmc
     pass: osmc
     path:
-        remote: /mnt/mass/Web
+        remote: /var/www/html
