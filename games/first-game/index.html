@@ -1,0 +1,221 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+	<meta charset="UTF-8" />
+	<title>First Game</Ph></title>
+	<script type="text/javascript" src="../../phaser/build/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            padding-top: 50px;
+        }
+    </style>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Kalahan</a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="#">About</a></li> 
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Tools
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="http://kalahan.be:3000/transmission/web/">Transmission</a></li>
+            </ul>
+          </li>
+          
+           <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Games
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="games/2048/index.html">2048</a></li>
+              <li><a href="games/first-game/index.html">First Game</a></li>
+              <li><a href="games/flappy-bird/index.html">Flappy Bird</a></li>
+              <li><a href="games/basic-shooter/index.html">Shooter</a></li>
+              <li><a href="games/star-flight/index.html">Star Flight</a></li>
+            </ul>
+          </li>
+          
+        </ul>
+      </div>
+    </nav>
+
+<script type="text/javascript">
+
+var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+
+var platforms;
+var score = 0;
+var scoreText;
+var gameOverText;
+var baseHealth = 3
+var health = baseHealth;
+var time = 0;
+var countStar = 0;
+var topScore = 0;
+var numberOfStars = 12; 
+var firstRun = true;
+	
+function preload() {
+	game.load.image('sky', 'assets/sky.png');
+	game.load.image('ground', 'assets/platform2.png');
+	game.load.image('star', 'assets/star.png');
+	game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+	game.load.spritesheet('baddie', 'assets/baddie.png', 32, 48);
+}
+
+function create() {
+	game.physics.startSystem(Phaser.Physics.ARCADE);
+	game.add.sprite(0,0,'sky');
+	platforms = game.add.group();
+	platforms.enableBody = true;
+	var ground = platforms.create(0, game.world.height - 64, 'ground');
+	ground.scale.setTo(2, 2);
+	ground.body.immovable = true;
+	var ledge = platforms.create(400, 400, 'ground');
+	ledge.body.immovable = true;
+	ledge = platforms.create(-150, 250, 'ground');
+	ledge.body.immovable = true;	
+	
+	// Add Player
+	player = game.add.sprite(32, game.world.height -150, 'dude');
+	game.physics.arcade.enable(player);
+	player.body.bounce.y = 0.1;
+	player.body.gravity.y = 300;
+	player.body.collideWorldBounds = true;
+	
+	player.animations.add('left', [0, 1, 2, 3], 10, true);
+	player.animations.add('right', [5, 6, 7, 8], 10, true);
+	
+	//Create Controls
+	cursors = game.input.keyboard.createCursorKeys();
+	
+	//Create stars
+	stars = game.add.group();
+	stars.enableBody = true;
+	for (var i = 0; i < numberOfStars; i++){
+		var star = stars.create(i * 70, 0, 'star');
+		star.body.gravity.y = 10;
+		star.body.bounce.y = 0.7 + Math.random() * 0.4;
+	}
+	
+	//Create HUD
+	scoreText = game.add.text(16, 16, 'Score: ' + score, {fontSize: '32px', fill: '#000' });
+	topScoreText = game.add.text(16, 42, 'Top Score: ' + topScore, {fontSize: '32px', fill: '#000' });
+	
+	timeText = game.add.text(game.world.width - 16, 50, 'Time: ' + time, {fontSize: '32px', fill: '#000' });
+	timeText.anchor.set(1);
+	
+	healthText = game.add.text(game.world.width / 2, 36, '', {fontSize: '32px', fill: '#000' });
+	healthText.anchor.set(0.5);
+	
+	//gameOverText = game.add.text( 16, 16, 'test', {fontSize: '164px', fill: '#000' });
+	//gameOverText.anchor.set(0.5);
+	
+	//Create timer
+	if (firstRun) {
+		game.time.events.repeat(Phaser.Timer.SECOND * 1, 1000, timeEvent);
+	}
+
+	firstRun = false;
+}
+
+function update() {
+	game.physics.arcade.collide(player, platforms);
+	game.physics.arcade.collide(stars, platforms);
+	game.physics.arcade.overlap(player, stars, collectStar, null, this);
+	
+	player.body.velocity.x = 0;
+	
+	if (cursors.left.isDown){
+		player.body.velocity.x = -150;
+		player.animations.play('left');
+	} else if (cursors.right.isDown){
+		player.body.velocity.x = 150;
+		player.animations.play('right');
+	} else {
+		player.animations.stop();		
+		player.frame = 4;	
+	}
+		
+	if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR, 100) && player.body.touching.down) {
+    player.body.velocity.y = - 350;
+		changeScore(-1);
+	}
+}
+	
+function collectStar(player, star) {
+	star.kill();
+	countStar += 1;
+	changeScore(10);
+	
+	if (countStar >= numberOfStars) {
+		gameOver();
+	}
+}
+
+function gameOver() {
+	updateTopScore();
+	score = 0;
+	time = 0
+	countStar = 0;
+	player.
+	health = baseHealth;
+	create();
+}
+	
+function restart(){
+	
+}
+	
+function sleep(miliseconds) {
+	var currentTime = new Date().getTime();
+	while (currentTime + miliseconds >= new Date().getTime()) {
+	}
+}
+	
+function changeScore(scoreDifference) {
+	
+	score = score + scoreDifference; 
+	if (score > 0){
+		scoreText.text = 'Score: ' + score;	
+	} else {
+		score = 0;
+	}
+}
+
+function changeTime(timeDifference) {
+	time = time + timeDifference; 
+	timeText.text = 'Time: ' + time;	
+}
+
+function updateTopScore(){
+	if (score > topScore){
+		topScore = score;
+		topScoreText.text = topScore;		
+	}
+}
+
+function timeEvent(){
+	changeScore(-0.5);
+	changeTime(1);
+}
+
+</script>
+
+</body>
+</html>

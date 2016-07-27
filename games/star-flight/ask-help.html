@@ -1,0 +1,53 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+	<meta charset="UTF-8" />
+	<title>StarFlight</title>
+	<script type="text/javascript" src="js/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<script type="text/javascript">
+
+var game = new Phaser.Game(350, 300, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+function preload() {
+game.load.image('player', 'assets/player.png');
+}
+
+function create() {
+
+game.physics.startSystem(Phaser.Physics.ARCADE);
+
+positionY = 250
+position1X = 50
+position2X = 150
+position3X = 250
+
+player = game.add.sprite(position2X, positionY, 'player');
+playerTween = game.add.tween(player);
+
+cursors = game.input.keyboard.createCursorKeys();
+
+}
+
+function update() {
+
+if (cursors.left.isDown)
+{
+    playerTween.to({x: position1X, y: positionY}, 60);
+    playerTween.start();
+} else if (cursors.right.isDown)
+{
+    playerTween.to({x: position3X, y: positionY}, 60);
+    playerTween.start(); 
+}
+
+}
+</script>
+</body>
+</html>
