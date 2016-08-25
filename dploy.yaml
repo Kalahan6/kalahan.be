@@ -1,8 +1,8 @@
 raspi:
     scheme: sftp
-    host: kalahan.be
+    host: kalahan.asuscomm.com
     port: 22
     user: osmc
-    pass: osmc
+    pass: thisis7519
     path:
         remote: /var/www/html
